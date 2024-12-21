@@ -10,20 +10,20 @@ def tokenize_text(text: str) -> List[str]:
     return re.findall(r"\b\w+\b", text.lower())
 
 
-def calculate_tfidf(corpus: List[str]) -> Dict[str, float]:
+def calculate_tfidf(corpus):
     """Вычисляет TF-IDF для каждого слова в корпусе текстов."""
+    tfidf = {}
+    total_docs = len(corpus)
+    term_frequencies = [Counter(doc.split()) for doc in corpus]
 
-    tf = Counter(tokenize_text(" ".join(corpus)))
-    total_words = sum(tf.values())
+    for term in set(word for doc in corpus for word in doc.split()):
+        doc_count = sum(1 for tf in term_frequencies if term in tf)
+        idf = math.log((total_docs + 1) / (doc_count + 1)) + \
+            1  # Добавили +1 для стабильности
+        for doc_index, tf in enumerate(term_frequencies):
+            tfidf[term] = tf[term] * idf
 
-    def idf(word: str) -> float:
-        return math.log(
-            len(corpus) / (1 + sum(1 for doc in corpus if word in doc))
-        )
-
-    return {
-        word: (freq / total_words) * idf(word) for word, freq in tf.items()
-    }
+    return tfidf
 
 
 def find_longest_common_subsequence(s1: str, s2: str) -> str:
@@ -63,16 +63,14 @@ def knapsack(weights: List[int], values: List[int], capacity: int) -> int:
     return dp[n][capacity]
 
 
-def matrix_multiplication(
-    matrix1: List[List[int]], matrix2: List[List[int]]
-) -> List[List[int]]:
+def matrix_multiplication(matrix1, matrix2):
     """Умножает две матрицы."""
     if len(matrix1[0]) != len(matrix2):
-        raise ValueError("Матрицы нельзя перемножить.")
-    result = [
-        [sum(a * b for a, b in zip(row, col)) for col in zip(*matrix2)]
-        for row in matrix1
-    ]
+        raise ValueError("Incompatible matrix dimensions for multiplication")
+    result = [[sum(a * b for a, b in zip(
+        row,
+        col
+    )) for col in zip(*matrix2)] for row in matrix1]
     return result
 
 
